@@ -12,13 +12,17 @@ public class ClientHandler implements Runnable
     private DataInputStream in = null;
     private DataOutputStream out = null;
 
+
     //Data
     private static Queue<String> queue = new LinkedList<>();
+    private String userName;
+    private boolean sentName;
 
 
     public ClientHandler(Socket socket)
     {
         this.socket = socket;
+        sentName = false;
         try
         {
             in = new DataInputStream(this.socket.getInputStream());
@@ -34,14 +38,29 @@ public class ClientHandler implements Runnable
     {
         queue.add(messageIn);
     }
-    public void checkQueue()
+    public synchronized boolean peek()
     {
-        queue.peek();
+        if (queue.peek() != null)
+        {
+            return true;
+        }
+        return false;
+        //queue.peek();
     }
-
     public synchronized void dequeue()
     {
         queue.remove();
+    }
+
+    public String getMessage()
+    {
+        return queue.peek();
+    }
+
+    //Username
+    public synchronized String getUserName()
+    {
+        return userName;
     }
 
     public void sendMessage(String outMessage)
@@ -65,8 +84,21 @@ public class ClientHandler implements Runnable
         {
             try
             {
-                String message = in.readUTF();
-                //System.out.println(message);
+                if (!sentName)
+                {
+                    userName = in.readUTF();
+                    sentName = true;
+                    //System.out.println(userName);
+                    System.out.println(sentName);
+                }
+                else if(sentName)
+                {
+                    String message = in.readUTF();
+                    //System.out.println("Message received: " + message);
+                    enqueue(message);
+                    //System.out.println(message);
+                }
+
             } catch (IOException e)
             {
                 throw new RuntimeException(e);
