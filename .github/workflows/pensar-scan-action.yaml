@@ -1,1 +1,18 @@
+on: [workflow_dispatch]
 
+jobs:
+  pensar_action_job:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    name: Pensar scan
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Pensar scan
+        uses: pensarai/cli@v0.2.1-alpha
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PENSAR_API_KEY: ${{ secrets.PENSAR_API_KEY }}
